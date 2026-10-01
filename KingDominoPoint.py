@@ -10,10 +10,11 @@ file = random.choice(os.listdir(path))
 frame = cv2.imread(os.path.join(path,file))
 
 #Convert Frame
-hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
+hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 
 #Colours
-dgreen = ([46, 40, 10], [60, 255, 70])
+dgreen = ([41, 40, 7], [67, 255, 80])
 brown = ([10, 90, 35], [20, 255, 55])
 
 lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
@@ -24,34 +25,35 @@ mask_brown = cv2.inRange(hsv, lower_br, upper_br)
 Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
 
 #Convert to tiles
+GRID_ROWS = 5
+GRID_COLS = 5
+
 frame_height, frame_width, _ = frame.shape
-tileH = frame_height // 5
-tileW = frame_width // 5
-cv2.namedWindow("Tile Viewer", cv2.WINDOW_NORMAL)
+tileH = frame_height // GRID_ROWS   # Fixed: Divide by 5 instead of 11
+tileW = frame_width // GRID_COLS    # Fixed: Divide by 5 instead of 11
+cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
 #Clean mask
-kernel = numpy.ones((7, 7), numpy.uint8)
+kernel = numpy.ones((5, 5), numpy.uint8)
 cleaned_mask = cv2.morphologyEx(Forest_mask, cv2.MORPH_CLOSE, kernel)
-#cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_OPEN, kernel)
+cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_OPEN, kernel)
 
-tile_index = 1
-for row in range(5):
-    for col in range(5):
-        # Calculate pixel coordinates for the current tile
+#Create a colour display canvas
+grid_visualization = cv2.cvtColor(cleaned_mask, cv2.COLOR_GRAY2BGR)
+
+contour_canvas = numpy.zeros_like(frame)
+
+# Loop through your 5x5 tiles sequentially if you still need to process them
+for row in range(GRID_ROWS):
+    for col in range(GRID_COLS):
         y_start = row * tileH
         y_end = (row + 1) * tileH
         x_start = col * tileW
         x_end = (col + 1) * tileW
         
-        # Crop using NumPy slicing
+        # This extracts your clean, isolated tile for logic/math
         tile = cleaned_mask[y_start:y_end, x_start:x_end]
-        cv2.imshow("Tile Viewer", tile)
 
-        key = cv2.waitKey(0) & 0xFF
-        if key == ord('q'):
-            break
-    if key == ord('q'):
-        break
 
 #Find contours
 contours, hierarchy = cv2.findContours(cleaned_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -61,7 +63,7 @@ contour_canvas = numpy.zeros_like(frame)
 cv2.drawContours(contour_canvas, contours, -1, (255, 0, 0), 2)
 
 for i, c in enumerate(contours):
-        if cv2.contourArea(c) <= 850: 
+        if cv2.contourArea(c) <= 880: 
             continue    
         
         x, y, w, h = cv2.boundingRect(c)
@@ -72,8 +74,9 @@ for i, c in enumerate(contours):
         cv2.putText(contour_canvas, f"ID: {i}", (x, y - 10), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
-#cv2.imshow("Smooth Map", contour_canvas)
-cv2.imshow("Green", Forest_mask)
-cv2.imshow("window", frame)
+cv2.imshow("Smooth Map", contour_canvas)
+#cv2.imshow("mask1", cleaned_mask)
+cv2.imshow("window", dst)
+cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
 
 cv2.waitKey(0)
