@@ -11,6 +11,8 @@ img = cv.imread(str(image_dir / "crown.jpg"))
 img = cv.imread(str(image_path))
 if img is None:
     raise FileNotFoundError(f"Could not load image: {image_path}")
-
-cv.imshow("image", img)
-cv.waitKey(0)
+crown = img
+crown_90 = cv.rotate(crown, cv.ROTATE_90_CLOCKWISE)
+crown_180 = cv.rotate(crown, cv.ROTATE_180)
+crown_270 = cv.rotate(crown, cv.ROTATE_90_COUNTERCLOCKWISE)
+templates = [crown, crown_90, crown_180, crown_270]
