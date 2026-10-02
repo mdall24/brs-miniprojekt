@@ -43,6 +43,26 @@ grid_visualization = cv2.cvtColor(cleaned_mask, cv2.COLOR_GRAY2BGR)
 
 contour_canvas = numpy.zeros_like(frame)
 
+#Point system
+POINT_THRESH = 0.30
+tile_type_array = []
+
+def count_tile(tile):
+    white_pixels = cv2.countNonZero(tile)
+    total_pixels = tile.shape[0] * tile.shape[1]
+    fill_ratio = white_pixels / total_pixels
+
+    if fill_ratio >= POINT_THRESH:
+            tile_type = 1
+    else:
+            tile_type = 0
+    tile_type_array.append(tile_type)
+
+def count_grouped(tile_type_array):
+    for 1 in tile_type_array:
+          return
+
+
 # Loop through your 5x5 tiles sequentially if you still need to process them
 for row in range(GRID_ROWS):
     for col in range(GRID_COLS):
@@ -53,7 +73,9 @@ for row in range(GRID_ROWS):
         
         # This extracts your clean, isolated tile for logic/math
         tile = cleaned_mask[y_start:y_end, x_start:x_end]
+        count_tile(tile)
 
+print(tile_type_array)
 
 #Find contours
 contours, hierarchy = cv2.findContours(cleaned_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -74,7 +96,7 @@ for i, c in enumerate(contours):
         cv2.putText(contour_canvas, f"ID: {i}", (x, y - 10), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
-cv2.imshow("Smooth Map", contour_canvas)
+#cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
 cv2.imshow("window", dst)
 cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
