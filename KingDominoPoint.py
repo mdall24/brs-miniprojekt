@@ -29,8 +29,8 @@ GRID_ROWS = 5
 GRID_COLS = 5
 
 frame_height, frame_width, _ = frame.shape
-tileH = frame_height // GRID_ROWS   # Fixed: Divide by 5 instead of 11
-tileW = frame_width // GRID_COLS    # Fixed: Divide by 5 instead of 11
+tileH = frame_height // GRID_ROWS
+tileW = frame_width // GRID_COLS
 cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
 #Clean mask
