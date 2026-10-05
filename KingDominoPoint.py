@@ -2,6 +2,7 @@ import cv2
 import numpy
 import os
 import random
+from itertools import groupby, product
 
 #Get Image
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -14,8 +15,8 @@ dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
 hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 
 #Colours
-dgreen = ([41, 40, 7], [67, 255, 80])
-brown = ([10, 90, 35], [20, 255, 55])
+dgreen = ([35, 40, 7], [67, 255, 80])
+brown = ([9, 90, 35], [20, 255, 55])
 
 lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
 lower_br, upper_br = numpy.array(brown[0], dtype="uint8"), numpy.array(brown[1], dtype="uint8")
@@ -57,13 +58,18 @@ def count_tile(tile):
     else:
             tile_type = 0
     tile_type_array.append(tile_type)
+    
+def count_indices(array):
+    element = 1
+    indices = [i for i, val in enumerate(array) if val == element]
+    return indices
+        
+def Manhattan(index1, index2):
+    x1, y1 = index1 % 5, index1 // 5
+    x2, y2 = index2 % 5, index2 // 5
+    
+    return abs(x1 - x2) + abs(y1 - y2)
 
-def count_grouped(tile_type_array):
-    for 1 in tile_type_array:
-          return
-
-
-# Loop through your 5x5 tiles sequentially if you still need to process them
 for row in range(GRID_ROWS):
     for col in range(GRID_COLS):
         y_start = row * tileH
@@ -71,11 +77,30 @@ for row in range(GRID_ROWS):
         x_start = col * tileW
         x_end = (col + 1) * tileW
         
-        # This extracts your clean, isolated tile for logic/math
         tile = cleaned_mask[y_start:y_end, x_start:x_end]
         count_tile(tile)
 
-print(tile_type_array)
+array_results = []
+array_results = count_indices(tile_type_array)
+
+# 1. Find pairs of adjacent indices (Manhattan distance == 1)
+man_tups = [tuple(sorted(sub)) for sub in product(array_results, repeat=2)
+            if Manhattan(*sub) == 1]
+man_tups = list(set(man_tups))
+pools = [{idx} for idx in array_results]
+
+for p1, p2 in man_tups:
+    group1 = next((g for g in pools if p1 in g), None)
+    group2 = next((g for g in pools if p2 in g), None)
+    
+    if group1 and group2 and group1 != group2:
+        group1.update(group2)
+        pools.remove(group2)
+
+res = [sorted(list(g)) for g in pools]
+
+print(str(res))
+
 
 #Find contours
 contours, hierarchy = cv2.findContours(cleaned_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
