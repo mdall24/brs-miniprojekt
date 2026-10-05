@@ -34,18 +34,20 @@ tileH = frame_height // GRID_ROWS
 tileW = frame_width // GRID_COLS
 cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
-#Clean mask
-kernel = numpy.ones((5, 5), numpy.uint8)
-cleaned_mask = cv2.morphologyEx(Forest_mask, cv2.MORPH_CLOSE, kernel)
-cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_OPEN, kernel)
+def clean_mask(input_mask):
+    kernel = numpy.ones((5, 5), numpy.uint8)
+    input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_CLOSE, kernel)
+    input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_OPEN, kernel)
+    cleaned_mask = input_mask
+    return cleaned_mask
 
 #Create a colour display canvas
-grid_visualization = cv2.cvtColor(cleaned_mask, cv2.COLOR_GRAY2BGR)
+grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
 
 contour_canvas = numpy.zeros_like(frame)
 
 #Point system
-POINT_THRESH = 0.30
+POINT_THRESH = 0.35
 tile_type_array = []
 
 def count_tile(tile):
@@ -59,6 +61,7 @@ def count_tile(tile):
             tile_type = 0
     tile_type_array.append(tile_type)
     
+    
 def count_indices(array):
     element = 1
     indices = [i for i, val in enumerate(array) if val == element]
@@ -70,20 +73,23 @@ def Manhattan(index1, index2):
     
     return abs(x1 - x2) + abs(y1 - y2)
 
-for row in range(GRID_ROWS):
-    for col in range(GRID_COLS):
-        y_start = row * tileH
-        y_end = (row + 1) * tileH
-        x_start = col * tileW
-        x_end = (col + 1) * tileW
+def define_type(mask):
+    for row in range(GRID_ROWS):
+        for col in range(GRID_COLS):
+            y_start = row * tileH
+            y_end = (row + 1) * tileH
+            x_start = col * tileW
+            x_end = (col + 1) * tileW
         
-        tile = cleaned_mask[y_start:y_end, x_start:x_end]
-        count_tile(tile)
+            tile = mask[y_start:y_end, x_start:x_end]
+            count_tile(tile)
+
+define_type(clean_mask(Forest_mask))
 
 array_results = []
 array_results = count_indices(tile_type_array)
 
-# 1. Find pairs of adjacent indices (Manhattan distance == 1)
+#Find pairs of adjacent indices
 man_tups = [tuple(sorted(sub)) for sub in product(array_results, repeat=2)
             if Manhattan(*sub) == 1]
 man_tups = list(set(man_tups))
@@ -103,7 +109,7 @@ print(str(res))
 
 
 #Find contours
-contours, hierarchy = cv2.findContours(cleaned_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+contours, hierarchy = cv2.findContours(clean_mask(Forest_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 #Prepare a black canvas to draw the results on
 contour_canvas = numpy.zeros_like(frame)
