@@ -44,13 +44,20 @@ def clean_mask(input_mask):
 #Create a colour display canvas
 grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
 
-contour_canvas = numpy.zeros_like(frame)
+#contour_canvas = numpy.zeros_like(frame)
 
 #Point system
 POINT_THRESH = 0.35
-tile_type_array = []
+biome_arrays = {
+    "Forest": [],
+    "Ocean": []    
+    }
+biome_results = {
+    "Forest_result": [],
+    "Ocean_result": []
+    }
 
-def count_tile(tile):
+def count_tile(tile, biome):
     white_pixels = cv2.countNonZero(tile)
     total_pixels = tile.shape[0] * tile.shape[1]
     fill_ratio = white_pixels / total_pixels
@@ -59,7 +66,7 @@ def count_tile(tile):
             tile_type = 1
     else:
             tile_type = 0
-    tile_type_array.append(tile_type)
+    biome.append(tile_type)
     
     
 def count_indices(array):
@@ -73,7 +80,7 @@ def Manhattan(index1, index2):
     
     return abs(x1 - x2) + abs(y1 - y2)
 
-def define_type(mask):
+def define_type(mask, biome_array):
     for row in range(GRID_ROWS):
         for col in range(GRID_COLS):
             y_start = row * tileH
@@ -82,32 +89,34 @@ def define_type(mask):
             x_end = (col + 1) * tileW
         
             tile = mask[y_start:y_end, x_start:x_end]
-            count_tile(tile)
+            count_tile(tile, biome_array)
 
-define_type(clean_mask(Forest_mask))
+define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
 
-array_results = []
-array_results = count_indices(tile_type_array)
+biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
 
 #Find pairs of adjacent indices
-man_tups = [tuple(sorted(sub)) for sub in product(array_results, repeat=2)
-            if Manhattan(*sub) == 1]
-man_tups = list(set(man_tups))
-pools = [{idx} for idx in array_results]
+def find_groups(result):
+    man_tups = [tuple(sorted(sub)) for sub in product(result, repeat=2)
+                if Manhattan(*sub) == 1]
+    man_tups = list(set(man_tups))
+    pools = [{idx} for idx in result]
 
-for p1, p2 in man_tups:
-    group1 = next((g for g in pools if p1 in g), None)
-    group2 = next((g for g in pools if p2 in g), None)
+    for p1, p2 in man_tups:
+        group1 = next((g for g in pools if p1 in g), None)
+        group2 = next((g for g in pools if p2 in g), None)
     
-    if group1 and group2 and group1 != group2:
-        group1.update(group2)
-        pools.remove(group2)
+        if group1 and group2 and group1 != group2:
+            group1.update(group2)
+            pools.remove(group2)
 
-res = [sorted(list(g)) for g in pools]
+    res = [sorted(list(g)) for g in pools]
+    return res
 
-print(str(res))
+res = find_groups(biome_results["Forest_result"])
+print(res)
 
-
+'''
 #Find contours
 contours, hierarchy = cv2.findContours(clean_mask(Forest_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -126,7 +135,7 @@ for i, c in enumerate(contours):
         #Draw the ID text on the screen next to the object
         cv2.putText(contour_canvas, f"ID: {i}", (x, y - 10), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
+'''
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
 cv2.imshow("window", dst)
