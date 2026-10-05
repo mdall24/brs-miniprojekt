@@ -15,7 +15,7 @@ dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
 hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 
 #Colours
-dgreen = ([35, 40, 7], [67, 255, 80])
+dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
 
 lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
@@ -47,7 +47,7 @@ grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
 #contour_canvas = numpy.zeros_like(frame)
 
 #Point system
-POINT_THRESH = 0.35
+POINT_THRESH = 0.32
 biome_arrays = {
     "Forest": [],
     "Ocean": []    
@@ -116,6 +116,10 @@ def find_groups(result):
 res = find_groups(biome_results["Forest_result"])
 print(res)
 
+for i in res: 
+    size = len(i)
+    print(size)
+
 '''
 #Find contours
 contours, hierarchy = cv2.findContours(clean_mask(Forest_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -138,7 +142,7 @@ for i, c in enumerate(contours):
 '''
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
-cv2.imshow("window", dst)
+cv2.imshow("window", frame)
 cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
 
 cv2.waitKey(0)
