@@ -82,6 +82,7 @@ for k in range(100, 500, 100):
     cv.line(output, (0, k), (499, k), (255, 0, 0), 1)
 cv.imshow("yellow", yellow)
 cv.imshow("crowns", output)
+print("accepted", accepted)
 cv.waitKey(0)
 
 """ h, w = crown.crown.shape[:2]
@@ -95,5 +96,3 @@ cv.waitKey(0) """
 # cv.imwrite('res.png', board)
 # cv.imshow("Board", board)
 # cv.waitKey(0)
-
-
