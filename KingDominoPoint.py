@@ -1,4 +1,4 @@
-import cv2
+import cv2 as cv
 import numpy
 import os
 import random
@@ -8,21 +8,21 @@ from itertools import groupby, product
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(SCRIPT_DIR, 'cropped')
 file = random.choice(os.listdir(path))
-frame = cv2.imread(os.path.join(path,file))
+frame = cv.imread(os.path.join(path,file))
 
 #Convert Frame
-dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
-hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
+dst = cv.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
+hsv = cv.cvtColor(dst, cv.COLOR_BGR2HSV)
 
 #Colours
 dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
-yellow = ([20, 150, 135], [31, 255, 255])
+yellow = ([20, 200, 135], [31, 255, 255])
 blue = ([95, 150, 100], [124, 255,255])
 
 def create_mask(colour):
     lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
-    colour_mask = cv2.inRange(hsv, lower_c, upper_c)
+    colour_mask = cv.inRange(hsv, lower_c, upper_c)
     return colour_mask
 
 mask_green = create_mask(dgreen)
@@ -30,9 +30,9 @@ mask_brown = create_mask(brown)
 mask_yellow = create_mask(yellow)
 mask_blue = create_mask(blue)
 
-Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
+Forest_mask = cv.bitwise_or(mask_green, mask_brown)
 Field_mask = mask_yellow
-Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
+Ocean_mask = cv.bitwise_or(mask_blue, mask_brown)
 
 #Convert to tiles
 GRID_ROWS = 5
@@ -41,18 +41,18 @@ GRID_COLS = 5
 frame_height, frame_width, _ = frame.shape
 tileH = frame_height // GRID_ROWS
 tileW = frame_width // GRID_COLS
-cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
+cv.namedWindow("Stitched 5x5 Tile Map", cv.WINDOW_NORMAL)
 
 #Prepare mask
 def clean_mask(input_mask):
     kernel = numpy.ones((5, 5), numpy.uint8)
-    input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_CLOSE, kernel)
-    input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_OPEN, kernel)
+    input_mask = cv.morphologyEx(input_mask, cv.MORPH_CLOSE, kernel)
+    input_mask = cv.morphologyEx(input_mask, cv.MORPH_OPEN, kernel)
     cleaned_mask = input_mask
     return cleaned_mask
 
 #Create a colour display canvas
-grid_visualization = cv2.cvtColor(clean_mask(Ocean_mask), cv2.COLOR_GRAY2BGR)
+grid_visualization = cv.cvtColor(clean_mask(Ocean_mask), cv.COLOR_GRAY2BGR)
 
 #Point system
 POINT_THRESH = 0.34
@@ -68,7 +68,7 @@ biome_results = {
     }
 
 def count_tile(tile, biome):
-    white_pixels = cv2.countNonZero(tile)
+    white_pixels = cv.countNonZero(tile)
     total_pixels = tile.shape[0] * tile.shape[1]
     fill_ratio = white_pixels / total_pixels
 
@@ -140,7 +140,7 @@ create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
-cv2.imshow("window", frame)
-cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
+cv.imshow("window", frame)
+cv.imshow("Stitched 5x5 Tile Map", grid_visualization)
 
-cv2.waitKey(0)
+cv.waitKey(0)
