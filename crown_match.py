@@ -49,14 +49,28 @@ share_lo = tmpl_share * 0.6
 share_hi = tmpl_share * 1.6
 
 # ---------- matching ----------
-res = cv.matchTemplate(board, tmpl, cv.TM_CCORR_NORMED, mask=mask)
+maps, dims = [], []
+for t in crown.templates:
+    g = cv.cvtColor(t, cv.COLOR_BGR2GRAY)
+    _, m1 = cv.threshold(g, 235, 255, cv.THRESH_BINARY_INV)
+    m = cv.merge([m1, m1, m1])
+    maps.append(cv.matchTemplate(board, t, cv.TM_CCOEFF_NORMED, mask=m))
+    dims.append(t.shape[:2])
+
+rows = max(r.shape[0] for r in maps)
+cols = max(r.shape[1] for r in maps)
+stack = np.stack([np.pad(r, ((0, rows - r.shape[0]), (0, cols - r.shape[1])))
+                  for r in maps])
+res = stack.max(axis=0)
+best_rot = stack.argmax(axis=0)
 res_work = res.copy()
 output = board.copy()
 accepted = 0
 
-for i in range(60):
+for i in range(55):
     _, max_val, _, max_loc = cv.minMaxLoc(res_work)
     x, y = max_loc
+    h, w = dims[best_rot[y, x]]
 
     box_yellow = yellow[y:y + h, x:x + w]
     share = np.count_nonzero(box_yellow) / (w * h)
