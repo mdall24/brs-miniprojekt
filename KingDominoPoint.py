@@ -19,13 +19,15 @@ dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
 yellow = ([20, 150, 135], [31, 255, 255])
 
-lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
-lower_br, upper_br = numpy.array(brown[0], dtype="uint8"), numpy.array(brown[1], dtype="uint8")
-lower_yl, upper_yl = numpy.array(yellow[0], dtype="uint8"), numpy.array(yellow[1], dtype="uint8")
+def create_mask(colour):
+    lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
+    colour_mask = cv2.inRange(hsv, lower_c, upper_c)
+    return colour_mask
 
-mask_green = cv2.inRange(hsv, lower_dg, upper_dg)
-mask_brown = cv2.inRange(hsv, lower_br, upper_br)
-mask_yellow = cv2.inRange(hsv, lower_yl, upper_yl)
+mask_green = create_mask(dgreen)
+mask_brown = create_mask(brown)
+mask_yellow = create_mask(yellow)
+
 Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
 Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
 
