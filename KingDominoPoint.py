@@ -43,6 +43,7 @@ tileH = frame_height // GRID_ROWS
 tileW = frame_width // GRID_COLS
 cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
+#Prepare mask
 def clean_mask(input_mask):
     kernel = numpy.ones((5, 5), numpy.uint8)
     input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_CLOSE, kernel)
@@ -52,8 +53,6 @@ def clean_mask(input_mask):
 
 #Create a colour display canvas
 grid_visualization = cv2.cvtColor(clean_mask(Ocean_mask), cv2.COLOR_GRAY2BGR)
-
-#contour_canvas = numpy.zeros_like(frame)
 
 #Point system
 POINT_THRESH = 0.34
@@ -139,26 +138,6 @@ create_res(find_groups(biome_results["Forest_result"]), "Forests:")
 create_res(find_groups(biome_results["Field_result"]), "Fields:")
 create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 
-'''
-#Find contours
-contours, hierarchy = cv2.findContours(clean_mask(Forest_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-#Prepare a black canvas to draw the results on
-contour_canvas = numpy.zeros_like(frame)
-cv2.drawContours(contour_canvas, contours, -1, (255, 0, 0), 2)
-
-for i, c in enumerate(contours):
-        if cv2.contourArea(c) <= 880: 
-            continue    
-        
-        x, y, w, h = cv2.boundingRect(c)
-        center = (round(x + w / 2), round(y + h / 2))
-        cv2.circle(contour_canvas, center, 5, (0, 0, 255), -1)
-        
-        #Draw the ID text on the screen next to the object
-        cv2.putText(contour_canvas, f"ID: {i}", (x, y - 10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-'''
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
 cv2.imshow("window", frame)
