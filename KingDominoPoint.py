@@ -17,13 +17,17 @@ hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 #Colours
 dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
+yellow = ([20, 150, 135], [31, 255, 255])
 
 lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
 lower_br, upper_br = numpy.array(brown[0], dtype="uint8"), numpy.array(brown[1], dtype="uint8")
+lower_yl, upper_yl = numpy.array(yellow[0], dtype="uint8"), numpy.array(yellow[1], dtype="uint8")
 
 mask_green = cv2.inRange(hsv, lower_dg, upper_dg)
 mask_brown = cv2.inRange(hsv, lower_br, upper_br)
+mask_yellow = cv2.inRange(hsv, lower_yl, upper_yl)
 Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
+Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
 
 #Convert to tiles
 GRID_ROWS = 5
@@ -42,7 +46,7 @@ def clean_mask(input_mask):
     return cleaned_mask
 
 #Create a colour display canvas
-grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
+grid_visualization = cv2.cvtColor(clean_mask(Field_mask), cv2.COLOR_GRAY2BGR)
 
 #contour_canvas = numpy.zeros_like(frame)
 
@@ -50,11 +54,13 @@ grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
 POINT_THRESH = 0.34
 biome_arrays = {
     "Forest": [],
-    "Ocean": []    
+    "Ocean": [],
+    "Field": []    
     }
 biome_results = {
     "Forest_result": [],
-    "Ocean_result": []
+    "Ocean_result": [],
+    "Field_result": []
     }
 
 def count_tile(tile, biome):
@@ -92,8 +98,10 @@ def define_type(mask, biome_array):
             count_tile(tile, biome_array)
 
 define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
+define_type(clean_mask(Field_mask), biome_arrays["Field"])
 
 biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
+biome_results["Field_result"] = count_indices(biome_arrays["Field"])
 
 #Find pairs of adjacent indices
 def find_groups(result):
@@ -113,12 +121,15 @@ def find_groups(result):
     res = [sorted(list(g)) for g in pools]
     return res
 
-res = find_groups(biome_results["Forest_result"])
-print(res)
+def create_res(result):
+     result = result
+     print(result)
+     for g in result: 
+        size = len(g)
+        print(size)
 
-for g in res: 
-    size = len(g)
-    print(size)
+create_res(find_groups(biome_results["Forest_result"]))
+create_res(find_groups(biome_results["Field_result"]))
 
 '''
 #Find contours
