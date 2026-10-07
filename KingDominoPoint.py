@@ -47,7 +47,7 @@ grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
 #contour_canvas = numpy.zeros_like(frame)
 
 #Point system
-POINT_THRESH = 0.32
+POINT_THRESH = 0.34
 biome_arrays = {
     "Forest": [],
     "Ocean": []    
@@ -116,8 +116,8 @@ def find_groups(result):
 res = find_groups(biome_results["Forest_result"])
 print(res)
 
-for i in res: 
-    size = len(i)
+for g in res: 
+    size = len(g)
     print(size)
 
 '''
