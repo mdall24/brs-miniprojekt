@@ -31,7 +31,7 @@ mask_yellow = create_mask(yellow)
 mask_blue = create_mask(blue)
 
 Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
-Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
+Field_mask = mask_yellow
 Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
 
 #Convert to tiles
