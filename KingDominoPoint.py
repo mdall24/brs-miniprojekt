@@ -18,6 +18,7 @@ hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
 yellow = ([20, 150, 135], [31, 255, 255])
+blue = ([95, 150, 100], [124, 255,255])
 
 def create_mask(colour):
     lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
@@ -27,9 +28,11 @@ def create_mask(colour):
 mask_green = create_mask(dgreen)
 mask_brown = create_mask(brown)
 mask_yellow = create_mask(yellow)
+mask_blue = create_mask(blue)
 
 Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
 Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
+Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
 
 #Convert to tiles
 GRID_ROWS = 5
@@ -48,7 +51,7 @@ def clean_mask(input_mask):
     return cleaned_mask
 
 #Create a colour display canvas
-grid_visualization = cv2.cvtColor(clean_mask(Field_mask), cv2.COLOR_GRAY2BGR)
+grid_visualization = cv2.cvtColor(clean_mask(Ocean_mask), cv2.COLOR_GRAY2BGR)
 
 #contour_canvas = numpy.zeros_like(frame)
 
@@ -101,9 +104,11 @@ def define_type(mask, biome_array):
 
 define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
 define_type(clean_mask(Field_mask), biome_arrays["Field"])
+define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
 
 biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
 biome_results["Field_result"] = count_indices(biome_arrays["Field"])
+biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
 
 #Find pairs of adjacent indices
 def find_groups(result):
@@ -123,15 +128,16 @@ def find_groups(result):
     res = [sorted(list(g)) for g in pools]
     return res
 
-def create_res(result):
+def create_res(result, biome):
      result = result
-     print(result)
+     print(biome + str(result))
      for g in result: 
         size = len(g)
         print(size)
 
-create_res(find_groups(biome_results["Forest_result"]))
-create_res(find_groups(biome_results["Field_result"]))
+create_res(find_groups(biome_results["Forest_result"]), "Forests:")
+create_res(find_groups(biome_results["Field_result"]), "Fields:")
+create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 
 '''
 #Find contours
