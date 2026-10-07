@@ -31,8 +31,8 @@ mask = cv.merge([mask_1ch, mask_1ch, mask_1ch])
 # cv.waitKey(0)
 
 # ---------- colour settings ----------
-lower = np.array([22, 100, 100])    # tightened from your template numbers; adjust after looking at the mask
-upper = np.array([34, 255, 255])
+lower = np.array([24, 150, 135])    # tightened from your template numbers; adjust after looking at the mask
+upper = np.array([35, 255, 255])
 
 h, w = tmpl.shape[:2]
 
