@@ -73,6 +73,23 @@ for i in range(60):
     cv.rectangle(output, (x, y), (x + w, y + h), colour, 2)
     if ok:
         accepted += 1
+        label = str(i)
+        font, scale, thick = cv.FONT_HERSHEY_SIMPLEX, 0.5, 1
+        pad = 3
+
+
+        (tw, th), baseline = cv.getTextSize(label, font, scale, thick)
+
+
+        bg_w = tw + 2 * pad
+        bg_h = th + baseline + 2 * pad
+        top = y - bg_h
+        if top < 0:
+            top = y
+
+        cv.rectangle(output, (x, top), (x + bg_w, top + bg_h), (255,255,255), cv.FILLED)
+        cv.putText(output, label, (x + pad, top + th + pad), font, scale, (0, 0, 0), thick)
+
 
 # DEV ONLY: grid lines every 100 px so you can read coordinates
 res_work = res.copy()
