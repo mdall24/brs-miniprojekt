@@ -2,7 +2,7 @@ from pathlib import Path
 import cv2 as cv
 import numpy as np
 import crown
-
+STARTER_THRESHOLD = 0.5
 image_dir = Path(__file__).resolve().parent
 board_dir = image_dir / "cropped"
 
@@ -67,7 +67,35 @@ res_work = res.copy()
 output = board.copy()
 accepted = 0
 
-for i in range(55):
+board_gray = cv.cvtColor(board, cv.COLOR_BGR2GRAY)
+
+best_val, best_loc, best_shape = -1, None, None
+
+for t in crown.starter_templates:
+    sres = cv.matchTemplate(board_gray, t, cv.TM_CCOEFF_NORMED)
+    _, val, _, loc = cv.minMaxLoc(sres)
+    print("starter template score", round(float(val), 3), "at", loc)
+    if val > best_val:
+        best_val, best_loc, best_shape = val, loc, t.shape[:2]
+        
+(sx, sy), (sh, sw) = best_loc, best_shape
+
+inv = 255 - t        # t is the grayscale reference
+sres_inv = cv.matchTemplate(board_gray, inv, cv.TM_CCOEFF_NORMED)
+_, val_inv, _, loc_inv = cv.minMaxLoc(sres_inv)
+print("inverted score", round(float(val_inv), 3), "at", loc_inv)
+
+if best_val >= STARTER_THRESHOLD:
+    m = max(h, w)
+    res_work[max(0, sy - m):sy + sh, max(0, sx - m):sx + sw] = 0
+else:
+    print("Starter tile not found. Proceeding with crown detection only.")
+
+print("starter best", round(float(best_val), 3), "at", (sx, sy),
+      "size", (sw, sh), "found:", best_val >= STARTER_THRESHOLD)
+cv.rectangle(output, (sx, sy), (sx + sw, sy + sh), (255, 0, 255), 2)
+
+for i in range(45):
     _, max_val, _, max_loc = cv.minMaxLoc(res_work)
     x, y = max_loc
     h, w = dims[best_rot[y, x]]
@@ -106,11 +134,11 @@ for i in range(55):
 
 
 # DEV ONLY: grid lines every 100 px so you can read coordinates
-res_work = res.copy()
+""" res_work = res.copy()
 res_work[190:300, 190:300] = 0 
 for k in range(100, 500, 100):
     cv.line(output, (k, 0), (k, 499), (255, 0, 0), 1)
-    cv.line(output, (0, k), (499, k), (255, 0, 0), 1)
+    cv.line(output, (0, k), (499, k), (255, 0, 0), 1) """
 cv.imshow("yellow", yellow)
 cv.imshow("crowns", output)
 print("accepted", accepted)

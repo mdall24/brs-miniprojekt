@@ -16,3 +16,14 @@ crown_90 = cv.rotate(crown, cv.ROTATE_90_CLOCKWISE)
 crown_180 = cv.rotate(crown, cv.ROTATE_180)
 crown_270 = cv.rotate(crown, cv.ROTATE_90_COUNTERCLOCKWISE)
 templates = [crown, crown_90, crown_180, crown_270]
+
+starter_tile = cv.imread(str(image_dir / "starter_tile.png"), cv.IMREAD_GRAYSCALE)
+if starter_tile is None:
+    raise FileNotFoundError(f"Could not load image: {image_dir / 'starter_tile.png'}")
+
+starter_templates = [
+    starter_tile,
+    cv.rotate(starter_tile, cv.ROTATE_90_CLOCKWISE),
+    cv.rotate(starter_tile, cv.ROTATE_180),
+    cv.rotate(starter_tile, cv.ROTATE_90_COUNTERCLOCKWISE)
+]
