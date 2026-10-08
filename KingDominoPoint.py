@@ -11,14 +11,14 @@ file = random.choice(os.listdir(path))
 frame = cv.imread(os.path.join(path,file))
 
 #Convert Frame
-dst = cv.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
+dst = cv.GaussianBlur(frame, (7, 7), 0)
 hsv = cv.cvtColor(dst, cv.COLOR_BGR2HSV)
 
 #Colours
 dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
 yellow = ([20, 200, 135], [31, 255, 255])
-blue = ([95, 150, 100], [124, 255,255])
+blue = ([95, 150, 35], [124, 255,255])
 
 def create_mask(colour):
     lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
@@ -32,7 +32,7 @@ mask_blue = create_mask(blue)
 
 Forest_mask = cv.bitwise_or(mask_green, mask_brown)
 Field_mask = mask_yellow
-Ocean_mask = cv.bitwise_or(mask_blue, mask_brown)
+Ocean_mask = mask_blue
 
 #Convert to tiles
 GRID_ROWS = 5
@@ -140,7 +140,7 @@ create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
-cv.imshow("window", frame)
+cv.imshow("window", dst)
 cv.imshow("Stitched 5x5 Tile Map", grid_visualization)
 
 cv.waitKey(0)
