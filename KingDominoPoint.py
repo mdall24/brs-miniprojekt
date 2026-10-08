@@ -131,7 +131,7 @@ def create_res(result, biome):
      result = result
      print(biome + str(result))
      for g in result: 
-        size = len(g)
+        size = len(g) 
         print(size)
 
 create_res(find_groups(biome_results["Forest_result"]), "Forests:")
@@ -140,7 +140,7 @@ create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
-cv.imshow("window", dst)
+cv.imshow("window", frame)
 cv.imshow("Stitched 5x5 Tile Map", grid_visualization)
 
 cv.waitKey(0)
