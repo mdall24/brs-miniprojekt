@@ -6,7 +6,8 @@ image_dir = Path(__file__).resolve().parent
 board = cv.imread(str(image_dir / "cropped" / "1.jpg"))
 if board is None:
     raise FileNotFoundError("Could not load board")
-hsv = cv.cvtColor(board, cv.COLOR_BGR2HSV)
+frame_blur = cv.bilateralFilter(board,9,75,75)
+hsv = cv.cvtColor(frame_blur, cv.COLOR_BGR2HSV)
 
 def nothing(_):
     pass
@@ -23,7 +24,7 @@ while True:
     lo = np.array([cv.getTrackbarPos(n, "tuner") for n in ("H min", "S min", "V min")])
     hi = np.array([cv.getTrackbarPos(n, "tuner") for n in ("H max", "S max", "V max")])
     mask = cv.inRange(hsv, lo, hi)
-    cv.imshow("board", board)
+    cv.imshow("board", frame_blur)
     cv.imshow("mask", mask)
     if cv.waitKey(30) & 0xFF == 27:      # Esc to finish
         print("lower", lo, "upper", hi)
