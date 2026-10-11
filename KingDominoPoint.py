@@ -3,12 +3,14 @@ import numpy
 import os
 import random
 from itertools import groupby, product
+import grid
 
 #Get Image
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(SCRIPT_DIR, 'cropped')
 file = random.choice(os.listdir(path))
 frame = cv2.imread(os.path.join(path,file))
+grid.check_board(frame)
 
 #Convert Frame
 dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
@@ -34,13 +36,13 @@ Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
 Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
 Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
 
-#Convert to tiles
+""" Convert to tiles
 GRID_ROWS = 5
 GRID_COLS = 5
 
 frame_height, frame_width, _ = frame.shape
 tileH = frame_height // GRID_ROWS
-tileW = frame_width // GRID_COLS
+tileW = frame_width // GRID_COLS """
 cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
 def clean_mask(input_mask):
@@ -86,21 +88,16 @@ def count_indices(array):
     return indices
         
 def Manhattan(index1, index2):
-    x1, y1 = index1 % 5, index1 // 5
-    x2, y2 = index2 % 5, index2 // 5
+    r1, c1 = grid.from_index(index1)
+    r2, c2 = grid.from_index(index2)
     
-    return abs(x1 - x2) + abs(y1 - y2)
+    return abs(r1 - r2) + abs(c1 - c2)
 
 def define_type(mask, biome_array):
-    for row in range(GRID_ROWS):
-        for col in range(GRID_COLS):
-            y_start = row * tileH
-            y_end = (row + 1) * tileH
-            x_start = col * tileW
-            x_end = (col + 1) * tileW
-        
-            tile = mask[y_start:y_end, x_start:x_end]
-            count_tile(tile, biome_array)
+    for row in range(grid.GRID):
+        for col in range(grid.GRID):
+            tile = grid.get_square(mask, row, col)
+            count_tile(tile, biome_array)    
 
 define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
 define_type(clean_mask(Field_mask), biome_arrays["Field"])
