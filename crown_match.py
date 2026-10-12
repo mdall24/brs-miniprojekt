@@ -2,6 +2,8 @@ from pathlib import Path
 import cv2 as cv
 import numpy as np
 import crown
+import grid
+
 STARTER_THRESHOLD = 0.5
 image_dir = Path(__file__).resolve().parent
 board_dir = image_dir / "cropped"
@@ -18,6 +20,7 @@ board = cv.imread(str(board_path))
 if board is None:
     raise FileNotFoundError(f"Could not load image: {board_path}")
 print(board_path.name, board.shape)
+grid.check_board(board)
 
 #Create a mask for crown / background separation
 tmpl = crown.crown
@@ -95,7 +98,9 @@ print("starter best", round(float(best_val), 3), "at", (sx, sy),
       "size", (sw, sh), "found:", best_val >= STARTER_THRESHOLD)
 cv.rectangle(output, (sx, sy), (sx + sw, sy + sh), (255, 0, 255), 2)
 
-for i in range(45):
+crown_counts = [0] * (grid.GRID * grid.GRID)
+
+for i in range(50):
     _, max_val, _, max_loc = cv.minMaxLoc(res_work)
     x, y = max_loc
     h, w = dims[best_rot[y, x]]
@@ -115,6 +120,7 @@ for i in range(45):
     cv.rectangle(output, (x, y), (x + w, y + h), colour, 2)
     if ok:
         accepted += 1
+        crown_counts[grid.index_of_box(x, y, w, h)] += 1
         label = str(i)
         font, scale, thick = cv.FONT_HERSHEY_SIMPLEX, 0.5, 1
         pad = 3
@@ -133,25 +139,12 @@ for i in range(45):
         cv.putText(output, label, (x + pad, top + th + pad), font, scale, (0, 0, 0), thick)
 
 
-# DEV ONLY: grid lines every 100 px so you can read coordinates
-""" res_work = res.copy()
-res_work[190:300, 190:300] = 0 
-for k in range(100, 500, 100):
-    cv.line(output, (k, 0), (k, 499), (255, 0, 0), 1)
-    cv.line(output, (0, k), (499, k), (255, 0, 0), 1) """
-cv.imshow("yellow", yellow)
+# print the counts and draw the grid
+for row in range(grid.GRID):
+    start = row * grid.GRID
+    print(*crown_counts[start:start + grid.GRID])
+output = grid.draw_grid(output)
+
 cv.imshow("crowns", output)
 print("accepted", accepted)
 cv.waitKey(0)
-
-""" h, w = crown.crown.shape[:2]
-output = board.copy()
-cv.rectangle(output, max_loc, (max_loc[0] + w, max_loc[1] + h), (0, 0, 255), 2)
-
-cv.imshow("best match", output)
-cv.waitKey(0) """
-""" for t in crown.templates: """
-# ^^^^^^ Shows the board + all other stuff -- Write more code above ^^^^^^ 
-# cv.imwrite('res.png', board)
-# cv.imshow("Board", board)
-# cv.waitKey(0)
