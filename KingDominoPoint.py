@@ -9,7 +9,7 @@ import grid
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(SCRIPT_DIR, 'cropped')
 file = random.choice(os.listdir(path))
-frame = cv2.imread(os.path.join(path,file))
+frame = cv.imread(os.path.join(path,file))
 grid.check_board(frame)
 
 #Convert Frame
@@ -32,9 +32,9 @@ mask_brown = create_mask(brown)
 mask_yellow = create_mask(yellow)
 mask_blue = create_mask(blue)
 
-Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
-Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
-Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
+Forest_mask = cv.bitwise_or(mask_green, mask_brown)
+Field_mask = cv.bitwise_or(mask_yellow, mask_brown)
+Ocean_mask = cv.bitwise_or(mask_blue, mask_brown)
 
 """ Convert to tiles
 GRID_ROWS = 5
@@ -43,7 +43,7 @@ GRID_COLS = 5
 frame_height, frame_width, _ = frame.shape
 tileH = frame_height // GRID_ROWS
 tileW = frame_width // GRID_COLS """
-cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
+cv.namedWindow("Stitched 5x5 Tile Map", cv.WINDOW_NORMAL)
 
 #Prepare mask
 def clean_mask(input_mask):
