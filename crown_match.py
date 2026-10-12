@@ -100,7 +100,7 @@ cv.rectangle(output, (sx, sy), (sx + sw, sy + sh), (255, 0, 255), 2)
 
 crown_counts = [0] * (grid.GRID * grid.GRID)
 
-for i in range(45):
+for i in range(50):
     _, max_val, _, max_loc = cv.minMaxLoc(res_work)
     x, y = max_loc
     h, w = dims[best_rot[y, x]]
@@ -145,7 +145,6 @@ for row in range(grid.GRID):
     print(*crown_counts[start:start + grid.GRID])
 output = grid.draw_grid(output)
 
-cv.imshow("yellow", yellow)
 cv.imshow("crowns", output)
 print("accepted", accepted)
 cv.waitKey(0)
