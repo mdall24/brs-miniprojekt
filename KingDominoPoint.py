@@ -17,24 +17,33 @@ dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
 hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 
 #Colours
-dgreen = ([32, 40, 7], [69, 255, 80])
-brown = ([9, 90, 35], [20, 255, 55])
+forestgreen = ([32, 40, 7], [69, 255, 80])
+husbrown = ([9, 90, 35], [20, 255, 55])
 yellow = ([20, 150, 135], [31, 255, 255])
 blue = ([95, 150, 100], [124, 255,255])
+black = ([0, 0, 0], [30, 255, 40])
+brown = ([15, 16, 57], [26, 191, 255])
+green = ([32, 64, 69], [50, 255, 255])
 
 def create_mask(colour):
     lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
     colour_mask = cv2.inRange(hsv, lower_c, upper_c)
     return colour_mask
 
-mask_green = create_mask(dgreen)
-mask_brown = create_mask(brown)
+mask_forestgreen = create_mask(forestgreen)
+mask_husbrown = create_mask(husbrown)
 mask_yellow = create_mask(yellow)
 mask_blue = create_mask(blue)
+mask_black = create_mask(black)
+mask_brown = create_mask(brown)
+mask_green = create_mask(green)
 
-Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
-Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
-Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
+Forest_mask = cv2.bitwise_or(mask_forestgreen, mask_husbrown)
+Field_mask = cv2.bitwise_or(mask_yellow, mask_husbrown)
+Ocean_mask = cv2.bitwise_or(mask_blue, mask_husbrown)
+Mines_mask = cv2.bitwise_or(mask_black, mask_husbrown)
+deserts_mask = cv2.bitwise_or(mask_brown, mask_husbrown)
+grass_mask = cv2.bitwise_or(mask_green, mask_husbrown)
 
 """ Convert to tiles
 GRID_ROWS = 5
@@ -62,12 +71,18 @@ POINT_THRESH = 0.34
 biome_arrays = {
     "Forest": [],
     "Ocean": [],
-    "Field": []    
+    "Field": [],
+    "Mines": [],
+    "Deserts": [],
+    "Grass": []
     }
 biome_results = {
     "Forest_result": [],
     "Ocean_result": [],
-    "Field_result": []
+    "Field_result": [],
+    "Mines_result": [],
+    "Deserts_result": [],
+    "Grass_result": []
     }
 
 def count_tile(tile, biome):
@@ -102,10 +117,16 @@ def define_type(mask, biome_array):
 define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
 define_type(clean_mask(Field_mask), biome_arrays["Field"])
 define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
+define_type(clean_mask(Mines_mask), biome_arrays["Mines"])
+define_type(clean_mask(deserts_mask), biome_arrays["Deserts"])
+define_type(clean_mask(grass_mask), biome_arrays["Grass"])
 
 biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
 biome_results["Field_result"] = count_indices(biome_arrays["Field"])
 biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
+biome_results["Mines_result"] = count_indices(biome_arrays["Mines"])
+biome_results["Deserts_result"] = count_indices(biome_arrays["Deserts"])
+biome_results["Grass_result"] = count_indices(biome_arrays["Grass"])
 
 #Find pairs of adjacent indices
 def find_groups(result):
@@ -135,6 +156,9 @@ def create_res(result, biome):
 create_res(find_groups(biome_results["Forest_result"]), "Forests:")
 create_res(find_groups(biome_results["Field_result"]), "Fields:")
 create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
+create_res(find_groups(biome_results["Mines_result"]), "Mines:")
+create_res(find_groups(biome_results["Deserts_result"]), "Deserts:")
+create_res(find_groups(biome_results["Grass_result"]), "Grass:")
 
 '''
 #Find contours
