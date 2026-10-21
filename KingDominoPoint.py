@@ -3,12 +3,14 @@ import numpy
 import os
 import random
 from itertools import groupby, product
+import grid
 
 #Get Image
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(SCRIPT_DIR, 'cropped')
 file = random.choice(os.listdir(path))
 frame = cv2.imread(os.path.join(path,file))
+grid.check_board(frame)
 
 #Convert Frame
 dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
@@ -17,21 +19,30 @@ hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 #Colours
 dgreen = ([32, 40, 7], [69, 255, 80])
 brown = ([9, 90, 35], [20, 255, 55])
+yellow = ([20, 150, 135], [31, 255, 255])
+blue = ([95, 150, 100], [124, 255,255])
 
-lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
-lower_br, upper_br = numpy.array(brown[0], dtype="uint8"), numpy.array(brown[1], dtype="uint8")
+def create_mask(colour):
+    lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
+    colour_mask = cv2.inRange(hsv, lower_c, upper_c)
+    return colour_mask
 
-mask_green = cv2.inRange(hsv, lower_dg, upper_dg)
-mask_brown = cv2.inRange(hsv, lower_br, upper_br)
+mask_green = create_mask(dgreen)
+mask_brown = create_mask(brown)
+mask_yellow = create_mask(yellow)
+mask_blue = create_mask(blue)
+
 Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
+Field_mask = cv2.bitwise_or(mask_yellow, mask_brown)
+Ocean_mask = cv2.bitwise_or(mask_blue, mask_brown)
 
-#Convert to tiles
+""" Convert to tiles
 GRID_ROWS = 5
 GRID_COLS = 5
 
 frame_height, frame_width, _ = frame.shape
 tileH = frame_height // GRID_ROWS
-tileW = frame_width // GRID_COLS
+tileW = frame_width // GRID_COLS """
 cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
 def clean_mask(input_mask):
@@ -42,7 +53,7 @@ def clean_mask(input_mask):
     return cleaned_mask
 
 #Create a colour display canvas
-grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
+grid_visualization = cv2.cvtColor(clean_mask(Ocean_mask), cv2.COLOR_GRAY2BGR)
 
 #contour_canvas = numpy.zeros_like(frame)
 
@@ -50,11 +61,13 @@ grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
 POINT_THRESH = 0.34
 biome_arrays = {
     "Forest": [],
-    "Ocean": []    
+    "Ocean": [],
+    "Field": []    
     }
 biome_results = {
     "Forest_result": [],
-    "Ocean_result": []
+    "Ocean_result": [],
+    "Field_result": []
     }
 
 def count_tile(tile, biome):
@@ -75,25 +88,24 @@ def count_indices(array):
     return indices
         
 def Manhattan(index1, index2):
-    x1, y1 = index1 % 5, index1 // 5
-    x2, y2 = index2 % 5, index2 // 5
+    r1, c1 = grid.from_index(index1)
+    r2, c2 = grid.from_index(index2)
     
-    return abs(x1 - x2) + abs(y1 - y2)
+    return abs(r1 - r2) + abs(c1 - c2)
 
 def define_type(mask, biome_array):
-    for row in range(GRID_ROWS):
-        for col in range(GRID_COLS):
-            y_start = row * tileH
-            y_end = (row + 1) * tileH
-            x_start = col * tileW
-            x_end = (col + 1) * tileW
-        
-            tile = mask[y_start:y_end, x_start:x_end]
-            count_tile(tile, biome_array)
+    for row in range(grid.GRID):
+        for col in range(grid.GRID):
+            tile = grid.get_square(mask, row, col)
+            count_tile(tile, biome_array)    
 
 define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
+define_type(clean_mask(Field_mask), biome_arrays["Field"])
+define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
 
 biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
+biome_results["Field_result"] = count_indices(biome_arrays["Field"])
+biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
 
 #Find pairs of adjacent indices
 def find_groups(result):
@@ -113,12 +125,16 @@ def find_groups(result):
     res = [sorted(list(g)) for g in pools]
     return res
 
-res = find_groups(biome_results["Forest_result"])
-print(res)
+def create_res(result, biome):
+     result = result
+     print(biome + str(result))
+     for g in result: 
+        size = len(g)
+        print(size)
 
-for g in res: 
-    size = len(g)
-    print(size)
+create_res(find_groups(biome_results["Forest_result"]), "Forests:")
+create_res(find_groups(biome_results["Field_result"]), "Fields:")
+create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 
 '''
 #Find contours
