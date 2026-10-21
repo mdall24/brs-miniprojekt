@@ -3,42 +3,65 @@ import numpy
 import os
 import random
 from itertools import groupby, product
+import grid
 
 #Get Image
-#SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-#path = os.path.join(SCRIPT_DIR, 'cropped')
-#file = random.choice(os.listdir(path))
-#frame = cv2.imread(os.path.join(path,file))
-frame = cv2.imread(f"cropped/{1}.jpg")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(SCRIPT_DIR, 'cropped')
+file = random.choice(os.listdir(path))
+frame = cv2.imread(os.path.join(path,file))
+frame = cv2.imread(f"cropped/{62}.jpg")
 
-
-
-frame_blur = cv2.blur(frame,(5,5))
 
 #Convert Frame
-#dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
-hsv = cv2.cvtColor(frame_blur, cv2.COLOR_BGR2HSV)
+dst = cv2.fastNlMeansDenoisingColored(frame,None,10,10,7,21)
+hsv = cv2.cvtColor(dst, cv2.COLOR_BGR2HSV)
 
 #Colours
-dgreen = ([32, 40, 7], [69, 255, 80])
-brown = ([9, 90, 35], [20, 255, 55])
+forestgreen = ([32, 40, 7], [69, 255, 80])
+husbrown = ([9, 90, 35], [20, 255, 55])
+yellow = ([20, 150, 135], [31, 255, 255])
+blue = ([95, 150, 100], [124, 255,255])
+black = ([0, 0, 0], [30, 255, 40])
+brown = ([15, 16, 57], [26, 191, 255])
+green = ([32, 64, 69], [50, 255, 255])
 
-lower_dg, upper_dg = numpy.array(dgreen[0], dtype="uint8"), numpy.array(dgreen[1], dtype="uint8")
-lower_br, upper_br = numpy.array(brown[0], dtype="uint8"), numpy.array(brown[1], dtype="uint8")
 
-mask_green = cv2.inRange(hsv, lower_dg, upper_dg)
-mask_brown = cv2.inRange(hsv, lower_br, upper_br)
-Forest_mask = cv2.bitwise_or(mask_green, mask_brown)
 
-#Convert to tiles
+
+def create_mask(colour):
+    lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
+    colour_mask = cv2.inRange(hsv, lower_c, upper_c)
+    return colour_mask
+
+mask_forestgreen = create_mask(forestgreen)
+mask_husbrown = create_mask(husbrown)
+mask_yellow = create_mask(yellow)
+mask_blue = create_mask(blue)
+mask_black = create_mask(black)
+mask_brown = create_mask(brown)
+mask_green = create_mask(green)
+
+
+Forest_mask = cv2.bitwise_or(mask_forestgreen, mask_husbrown)
+Field_mask = cv2.bitwise_or(mask_yellow, mask_husbrown)
+Ocean_mask = cv2.bitwise_or(mask_blue, mask_husbrown)
+Mines_mask = cv2.bitwise_or(mask_black, mask_husbrown)
+deserts_mask = cv2.bitwise_or(mask_brown, mask_husbrown)
+grass_mask = cv2.bitwise_or(mask_green, mask_husbrown)
+
+
+
+""" Convert to tiles
 GRID_ROWS = 5
 GRID_COLS = 5
 
 frame_height, frame_width, _ = frame.shape
 tileH = frame_height // GRID_ROWS
-tileW = frame_width // GRID_COLS
+tileW = frame_width // GRID_COLS """
 cv2.namedWindow("Stitched 5x5 Tile Map", cv2.WINDOW_NORMAL)
 
+#her er der det sker
 def clean_mask(input_mask):
     kernel = numpy.ones((5, 5), numpy.uint8)
     input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_CLOSE, kernel)
@@ -47,19 +70,28 @@ def clean_mask(input_mask):
     return cleaned_mask
 
 #Create a colour display canvas
-grid_visualization = cv2.cvtColor(clean_mask(Forest_mask), cv2.COLOR_GRAY2BGR)
+grid_visualization = cv2.cvtColor(clean_mask(Ocean_mask), cv2.COLOR_GRAY2BGR)
 
 #contour_canvas = numpy.zeros_like(frame)
+
 
 #Point system
 POINT_THRESH = 0.34
 biome_arrays = {
     "Forest": [],
-    "Ocean": []    
+    "Ocean": [],
+    "Field": [],
+    "Mines": [],
+    "Deserts": [],
+    "Grass": []
     }
 biome_results = {
     "Forest_result": [],
-    "Ocean_result": []
+    "Ocean_result": [],
+    "Field_result": [],
+    "Mines_result": [],
+    "Deserts_result": [],
+    "Grass_result": []
     }
 
 def count_tile(tile, biome):
@@ -80,25 +112,30 @@ def count_indices(array):
     return indices
         
 def Manhattan(index1, index2):
-    x1, y1 = index1 % 5, index1 // 5
-    x2, y2 = index2 % 5, index2 // 5
+    r1, c1 = grid.from_index(index1)
+    r2, c2 = grid.from_index(index2)
     
-    return abs(x1 - x2) + abs(y1 - y2)
+    return abs(r1 - r2) + abs(c1 - c2)
 
 def define_type(mask, biome_array):
-    for row in range(GRID_ROWS):
-        for col in range(GRID_COLS):
-            y_start = row * tileH
-            y_end = (row + 1) * tileH
-            x_start = col * tileW
-            x_end = (col + 1) * tileW
-        
-            tile = mask[y_start:y_end, x_start:x_end]
-            count_tile(tile, biome_array)
+    for row in range(grid.GRID):
+        for col in range(grid.GRID):
+            tile = grid.get_square(mask, row, col)
+            count_tile(tile, biome_array)    
 
 define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
+define_type(clean_mask(Field_mask), biome_arrays["Field"])
+define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
+define_type(clean_mask(Mines_mask), biome_arrays["Mines"])
+define_type(clean_mask(deserts_mask), biome_arrays["Deserts"])
+define_type(clean_mask(grass_mask), biome_arrays["Grass"])
 
 biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
+biome_results["Field_result"] = count_indices(biome_arrays["Field"])
+biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
+biome_results["Mines_result"] = count_indices(biome_arrays["Mines"])
+biome_results["Deserts_result"] = count_indices(biome_arrays["Deserts"])
+biome_results["Grass_result"] = count_indices(biome_arrays["Grass"])
 
 #Find pairs of adjacent indices
 def find_groups(result):
@@ -118,13 +155,19 @@ def find_groups(result):
     res = [sorted(list(g)) for g in pools]
     return res
 
-res = find_groups(biome_results["Forest_result"])
-print(res)
+def create_res(result, biome):
+     result = result
+     print(biome + str(result))
+     for g in result: 
+        size = len(g)
+        print(size)
 
-for g in res: 
-    size = len(g)
-    print(size)
-
+create_res(find_groups(biome_results["Forest_result"]), "Forests:")
+create_res(find_groups(biome_results["Field_result"]), "Fields:")
+create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
+create_res(find_groups(biome_results["Mines_result"]), "Mines:")
+create_res(find_groups(biome_results["Deserts_result"]), "Deserts:")
+create_res(find_groups(biome_results["Grass_result"]), "Grass:")
 '''
 #Find contours
 contours, hierarchy = cv2.findContours(clean_mask(Forest_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -150,6 +193,8 @@ for i, c in enumerate(contours):
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
 cv2.imshow("window", frame)
-cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
+#cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
+cv2.imshow("grass", clean_mask(grass_mask))
+
 
 cv2.waitKey(0)
