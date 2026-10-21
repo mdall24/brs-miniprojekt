@@ -38,12 +38,12 @@ mask_black = create_mask(black)
 mask_brown = create_mask(brown)
 mask_green = create_mask(green)
 
-Forest_mask = cv2.bitwise_or(mask_forestgreen, mask_husbrown)
-Field_mask = cv2.bitwise_or(mask_yellow, mask_husbrown)
-Ocean_mask = cv2.bitwise_or(mask_blue, mask_husbrown)
-Mines_mask = cv2.bitwise_or(mask_black, mask_husbrown)
-deserts_mask = cv2.bitwise_or(mask_brown, mask_husbrown)
-grass_mask = cv2.bitwise_or(mask_green, mask_husbrown)
+Forest_mask = cv.bitwise_or(mask_forestgreen, mask_husbrown)
+Field_mask = cv.bitwise_or(mask_yellow, mask_husbrown)
+Ocean_mask = cv.bitwise_or(mask_blue, mask_husbrown)
+Mines_mask = cv.bitwise_or(mask_black, mask_husbrown)
+deserts_mask = cv.bitwise_or(mask_brown, mask_husbrown)
+grass_mask = cv.bitwise_or(mask_green, mask_husbrown)
 
 """ Convert to tiles
 GRID_ROWS = 5
