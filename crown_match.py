@@ -92,8 +92,8 @@ def detect_crowns(board):
         share = np.count_nonzero(box_yellow) / (w * h)
         ok = share_lo <= share <= share_hi
 
-        print(i, "score", round(float(max_val), 3), "yellow", round(share, 2),
-              "at", (x, y), "ACCEPT" if ok else "reject")
+        """ print(i, "score", round(float(max_val), 3), "yellow", round(share, 2),
+              "at", (x, y), "ACCEPT" if ok else "reject") """
 
         x0 = max(0, x - w // 2)
         y0 = max(0, y - h // 2)
@@ -118,7 +118,7 @@ def detect_crowns(board):
             cv.rectangle(output, (x, top), (x + bg_w, top + bg_h), (255, 255, 255), cv.FILLED)
             cv.putText(output, label, (x + pad, top + th + pad), font, scale, (0, 0, 0), thick)
 
-    print("accepted", accepted)
+    #print("accepted", accepted)
     return crown_counts, output, starter_index
 
 
