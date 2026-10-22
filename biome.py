@@ -4,16 +4,17 @@ import os
 import random
 from itertools import groupby, product
 import grid
+import Score
 
 #Get Image
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-path = os.path.join(SCRIPT_DIR, 'cropped')
-file = random.choice(os.listdir(path))
-frame = cv.imread(os.path.join(path,file))
-grid.check_board(frame)
+# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# path = os.path.join(SCRIPT_DIR, 'cropped')
+# file = random.choice(os.listdir(path))
+# board = cv.imread(os.path.join(path,file))
+# grid.check_board(board)
 
 #Convert Frame
-dst = cv.GaussianBlur(frame, (7, 7), 0)
+dst = cv.GaussianBlur(Score.board, (7, 7), 0)
 hsv = cv.cvtColor(dst, cv.COLOR_BGR2HSV)
 
 #Colours
@@ -145,7 +146,7 @@ def find_groups(result):
     res = [sorted(list(g)) for g in pools]
     return res
 
-def create_res(result, biome):
+""" def create_res(result, biome):
      result = result
      print(biome + str(result))
      for g in result: 
@@ -157,7 +158,18 @@ create_res(find_groups(biome_results["Field_result"]), "Fields:")
 create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 create_res(find_groups(biome_results["Mines_result"]), "Mines:")
 create_res(find_groups(biome_results["Deserts_result"]), "Deserts:")
-create_res(find_groups(biome_results["Grass_result"]), "Grass:")
+create_res(find_groups(biome_results["Grass_result"]), "Grass:") """
+
+#J-Man OG
+point_results = {
+     (find_groups(biome_results["Forest_result"]), "Forests:"),
+     (find_groups(biome_results["Field_result"]), "Fields:"),
+     (find_groups(biome_results["Ocean_result"]), "Oceans:") 
+     (find_groups(biome_results["Mines_result"]), "Mines:"),
+     (find_groups(biome_results["Deserts_result"]), "Deserts:"),
+     (find_groups(biome_results["Grass_result"]), "Grass:")
+}
+     
 
 '''
 #Find contours
@@ -181,7 +193,8 @@ for i, c in enumerate(contours):
 '''
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
-cv.imshow("window", frame)
-cv.imshow("Stitched 5x5 Tile Map", grid_visualization)
+# cv.imshow("window", score.board)
+# cv.imshow("Stitched 5x5 Tile Map", score.grid_visualization)
+# cv.imshow("mask1", score.clean_mask(score.Forest_mask))
 
-cv.waitKey(0)
+# cv.waitKey(0)

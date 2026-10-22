@@ -6,11 +6,11 @@ from itertools import groupby, product
 import grid
 
 #Get Image
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-path = os.path.join(SCRIPT_DIR, 'cropped')
-file = random.choice(os.listdir(path))
-frame = cv2.imread(os.path.join(path,file))
-frame = cv2.imread(f"cropped/{62}.jpg")
+# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# path = os.path.join(SCRIPT_DIR, 'cropped')
+# file = random.choice(os.listdir(path))
+# frame = cv2.imread(os.path.join(path,file))
+# frame = cv2.imread(f"cropped/{1}.jpg")
 
 
 #Convert Frame
@@ -190,11 +190,11 @@ for i, c in enumerate(contours):
 '''
 
 
-#cv2.imshow("Smooth Map", contour_canvas)
+""" #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
 cv2.imshow("window", frame)
 #cv2.imshow("Stitched 5x5 Tile Map", grid_visualization)
 cv2.imshow("grass", clean_mask(grass_mask))
 
 
-cv2.waitKey(0)
+cv2.waitKey(0) """

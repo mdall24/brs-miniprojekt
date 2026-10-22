@@ -1,5 +1,5 @@
 import cv2 as cv
-
+import Score
 
 #here we define the size of the board and define if we want 5x5, 6x6 etc. 
 BOARD_SIZE = 500
