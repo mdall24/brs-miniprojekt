@@ -28,11 +28,6 @@ gray = cv.cvtColor(tmpl, cv.COLOR_BGR2GRAY)
 _, mask_1ch = cv.threshold(gray, 235, 255, cv.THRESH_BINARY_INV)
 mask = cv.merge([mask_1ch, mask_1ch, mask_1ch])
 
-# look at it before using it
-# big_mask = cv.resize(mask, None, fx=7, fy=7, interpolation=cv.INTER_NEAREST)
-# cv.imshow("mask", big_mask)
-# cv.waitKey(0)
-
 # ---------- colour settings ----------
 lower = np.array([24, 150, 135])    # tightened from your template numbers; adjust after looking at the mask
 upper = np.array([35, 255, 255])
@@ -83,7 +78,7 @@ for t in crown.starter_templates:
         
 (sx, sy), (sh, sw) = best_loc, best_shape
 
-inv = 255 - t        # t is the grayscale reference
+inv = 255 - t   #T = grayscale refence
 sres_inv = cv.matchTemplate(board_gray, inv, cv.TM_CCOEFF_NORMED)
 _, val_inv, _, loc_inv = cv.minMaxLoc(sres_inv)
 print("inverted score", round(float(val_inv), 3), "at", loc_inv)
@@ -116,11 +111,11 @@ for i in range(50):
     y0 = max(0, y - h // 2)
     res_work[y0:y + h // 2 + 1, x0:x + w // 2 + 1] = 0
 
-    colour = (0, 255, 0) if ok else (0, 0, 255)
-    cv.rectangle(output, (x, y), (x + w, y + h), colour, 2)
+    
     if ok:
         accepted += 1
         crown_counts[grid.index_of_box(x, y, w, h)] += 1
+        cv.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
         label = str(i)
         font, scale, thick = cv.FONT_HERSHEY_SIMPLEX, 0.5, 1
         pad = 3
