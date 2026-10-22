@@ -1,6 +1,6 @@
 import cv2 as cv
 from pathlib import Path
-import crown_match
+import grid
 
 group = []
 
@@ -20,20 +20,21 @@ board = cv.imread(str(board_path))
 if board is None:
     raise FileNotFoundError(f"Could not load image: {board_path}")
 print(board_path.name, board.shape)
-import grid
 grid.check_board(board)
 
 
 
 
+import crown_match
 import biome
 
-for t in biome.biome_results:
-    for i in biome.find_groups(biome.biome_results[i]):
-        group = biome.biome_results[i]
-        crown_match.crowns = sum(crown_match.crown_counts[j] for j in group)
-        score = crown_match.crowns * len(biome.biome_results[i])
-        print(f"Biome: {i}, Group: {group}, Crowns: {crown_match.crowns}, Score: {score}")
+for name, indices in biome.biome_results.items():
+    for group in biome.find_groups(indices):
+        crowns = sum(crown_match.crown_counts[i] for i in group)
+        points = len(group) * crowns
+        print(f"{name} group {group} has {crowns} crowns, {points} points")
+
+
 
 
 

@@ -6,7 +6,7 @@ import grid
 from Score import board
 
 STARTER_THRESHOLD = 0.5
-image_dir = Path(__file__).resolve().parent
+""" image_dir = Path(__file__).resolve().parent
 board_dir = image_dir / "cropped"
 
 try:
@@ -21,7 +21,7 @@ board = cv.imread(str(board_path))
 if board is None:
     raise FileNotFoundError(f"Could not load image: {board_path}")
 print(board_path.name, board.shape)
-grid.check_board(board)
+grid.check_board(board) """
 
 #Create a mask for crown / background separation
 tmpl = crown.crown

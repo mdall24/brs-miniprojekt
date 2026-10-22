@@ -152,14 +152,16 @@ def find_groups(result):
      print(biome + str(result))
      for g in result: 
         size = len(g) 
-        print(size)
+        print(size) """
 
+""" 
 create_res(find_groups(biome_results["Forest_result"]), "Forests:")
 create_res(find_groups(biome_results["Field_result"]), "Fields:")
 create_res(find_groups(biome_results["Ocean_result"]), "Oceans:")
 create_res(find_groups(biome_results["Mines_result"]), "Mines:")
 create_res(find_groups(biome_results["Deserts_result"]), "Deserts:")
 create_res(find_groups(biome_results["Grass_result"]), "Grass:") """
+
 
 #J-Man OG
 """ point_results = [
@@ -169,11 +171,11 @@ create_res(find_groups(biome_results["Grass_result"]), "Grass:") """
      (find_groups(biome_results["Mines_result"]), "Mines:"),
      (find_groups(biome_results["Deserts_result"]), "Deserts:"),
      (find_groups(biome_results["Grass_result"]), "Grass:")
-] """
-     
+] 
+      """
 
-'''
-#Find contours
+
+""" #Find contours
 contours, hierarchy = cv2.findContours(clean_mask(Forest_mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 #Prepare a black canvas to draw the results on
@@ -190,8 +192,8 @@ for i, c in enumerate(contours):
         
         #Draw the ID text on the screen next to the object
         cv2.putText(contour_canvas, f"ID: {i}", (x, y - 10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-'''
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1) """
+
 #cv2.imshow("Smooth Map", contour_canvas)
 #cv2.imshow("mask1", cleaned_mask)
 # cv.imshow("window", score.board)
