@@ -1,10 +1,4 @@
 import cv2 as cv
-import numpy
-import os
-import random
-from itertools import groupby, product
-import biome
-import grid
 from pathlib import Path
 import crown_match
 
@@ -26,12 +20,13 @@ board = cv.imread(str(board_path))
 if board is None:
     raise FileNotFoundError(f"Could not load image: {board_path}")
 print(board_path.name, board.shape)
+import grid
 grid.check_board(board)
 
 
 
 
-
+import biome
 
 for t in biome.biome_results:
 

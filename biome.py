@@ -3,8 +3,8 @@ import numpy
 import os
 import random
 from itertools import groupby, product
-import grid
-import Score
+import grid 
+from Score import board
 
 #Get Image
 # SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -13,8 +13,9 @@ import Score
 # board = cv.imread(os.path.join(path,file))
 # grid.check_board(board)
 
+
 #Convert Frame
-dst = cv.GaussianBlur(Score.board, (7, 7), 0)
+dst = cv.GaussianBlur(board, (7, 7), 0)
 hsv = cv.cvtColor(dst, cv.COLOR_BGR2HSV)
 
 #Colours
