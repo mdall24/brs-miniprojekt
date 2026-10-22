@@ -1,22 +1,8 @@
+from pathlib import Path
 import cv2 as cv
 import numpy
-import os
-import random
-from itertools import groupby, product
+from itertools import product
 import grid 
-from Score import board
-
-#Get Image
-# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# path = os.path.join(SCRIPT_DIR, 'cropped')
-# file = random.choice(os.listdir(path))
-# board = cv.imread(os.path.join(path,file))
-# grid.check_board(board)
-
-
-#Convert Frame
-dst = cv.GaussianBlur(board, (7, 7), 0)
-hsv = cv.cvtColor(dst, cv.COLOR_BGR2HSV)
 
 #Colours
 forestgreen = ([32, 40, 7], [69, 255, 80])
@@ -27,34 +13,10 @@ black = ([0, 0, 0], [30, 255, 40])
 brown = ([15, 16, 57], [26, 191, 255])
 green = ([32, 64, 69], [50, 255, 255])
 
-def create_mask(colour):
+def create_mask(hsv, colour):
     lower_c, upper_c = numpy.array(colour[0], dtype="uint8"), numpy.array(colour[1], dtype="uint8")
     colour_mask = cv.inRange(hsv, lower_c, upper_c)
     return colour_mask
-
-mask_forestgreen = create_mask(forestgreen)
-mask_husbrown = create_mask(husbrown)
-mask_yellow = create_mask(yellow)
-mask_blue = create_mask(blue)
-mask_black = create_mask(black)
-mask_brown = create_mask(brown)
-mask_green = create_mask(green)
-
-Forest_mask = cv.bitwise_or(mask_forestgreen, mask_husbrown)
-Field_mask = cv.bitwise_or(mask_yellow, mask_husbrown)
-Ocean_mask = cv.bitwise_or(mask_blue, mask_husbrown)
-Mines_mask = cv.bitwise_or(mask_black, mask_husbrown)
-deserts_mask = cv.bitwise_or(mask_brown, mask_husbrown)
-grass_mask = cv.bitwise_or(mask_green, mask_husbrown)
-
-""" Convert to tiles
-GRID_ROWS = 5
-GRID_COLS = 5
-
-frame_height, frame_width, _ = frame.shape
-tileH = frame_height // GRID_ROWS
-tileW = frame_width // GRID_COLS """
-cv.namedWindow("Stitched 5x5 Tile Map", cv.WINDOW_NORMAL)
 
 #Prepare mask
 def clean_mask(input_mask):
@@ -64,27 +26,8 @@ def clean_mask(input_mask):
     cleaned_mask = input_mask
     return cleaned_mask
 
-#Create a colour display canvas
-grid_visualization = cv.cvtColor(clean_mask(Ocean_mask), cv.COLOR_GRAY2BGR)
-
 #Point system
 POINT_THRESH = 0.34
-biome_arrays = {
-    "Forest": [],
-    "Ocean": [],
-    "Field": [],
-    "Mines": [],
-    "Deserts": [],
-    "Grass": []
-    }
-biome_results = {
-    "Forest_result": [],
-    "Ocean_result": [],
-    "Field_result": [],
-    "Mines_result": [],
-    "Deserts_result": [],
-    "Grass_result": []
-    }
 
 def count_tile(tile, biome):
     white_pixels = cv.countNonZero(tile)
@@ -114,20 +57,49 @@ def define_type(mask, biome_array):
         for col in range(grid.GRID):
             tile = grid.get_square(mask, row, col)
             count_tile(tile, biome_array)    
+def detect_terrain(board):
+    grid.check_board(board)
 
-define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
-define_type(clean_mask(Field_mask), biome_arrays["Field"])
-define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
-define_type(clean_mask(Mines_mask), biome_arrays["Mines"])
-define_type(clean_mask(deserts_mask), biome_arrays["Deserts"])
-define_type(clean_mask(grass_mask), biome_arrays["Grass"])
+    # Convert frame
+    dst = cv.GaussianBlur(board, (7, 7), 0)
+    hsv = cv.cvtColor(dst, cv.COLOR_BGR2HSV)
 
-biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
-biome_results["Field_result"] = count_indices(biome_arrays["Field"])
-biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
-biome_results["Mines_result"] = count_indices(biome_arrays["Mines"])
-biome_results["Deserts_result"] = count_indices(biome_arrays["Deserts"])
-biome_results["Grass_result"] = count_indices(biome_arrays["Grass"])
+
+    mask_forestgreen = create_mask(hsv, forestgreen)
+    mask_husbrown = create_mask(hsv, husbrown)
+    mask_yellow = create_mask(hsv, yellow)
+    mask_blue = create_mask(hsv, blue)
+    mask_black = create_mask(hsv, black)
+    mask_brown = create_mask(hsv, brown)
+    mask_green = create_mask(hsv, green)
+
+    Forest_mask = cv.bitwise_or(mask_forestgreen, mask_husbrown)
+    Field_mask = cv.bitwise_or(mask_yellow, mask_husbrown)
+    Ocean_mask = cv.bitwise_or(mask_blue, mask_husbrown)
+    Mines_mask = cv.bitwise_or(mask_black, mask_husbrown)
+    deserts_mask = cv.bitwise_or(mask_brown, mask_husbrown)
+    grass_mask = cv.bitwise_or(mask_green, mask_husbrown)
+
+    biome_arrays = {"Forest": [], "Ocean": [], "Field": [],
+                    "Mines": [], "Deserts": [], "Grass": []}
+    biome_results = {"Forest_result": [], "Ocean_result": [], "Field_result": [],
+                     "Mines_result": [], "Deserts_result": [], "Grass_result": []}
+
+    define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
+    define_type(clean_mask(Field_mask), biome_arrays["Field"])
+    define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
+    define_type(clean_mask(Mines_mask), biome_arrays["Mines"])
+    define_type(clean_mask(deserts_mask), biome_arrays["Deserts"])
+    define_type(clean_mask(grass_mask), biome_arrays["Grass"])
+
+    biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
+    biome_results["Field_result"] = count_indices(biome_arrays["Field"])
+    biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
+    biome_results["Mines_result"] = count_indices(biome_arrays["Mines"])
+    biome_results["Deserts_result"] = count_indices(biome_arrays["Deserts"])
+    biome_results["Grass_result"] = count_indices(biome_arrays["Grass"])
+
+    return biome_results
 
 #Find pairs of adjacent indices
 def find_groups(result):
@@ -201,3 +173,9 @@ for i, c in enumerate(contours):
 # cv.imshow("mask1", score.clean_mask(score.Forest_mask))
 
 # cv.waitKey(0)
+if __name__ == "__main__":
+    image_dir = Path(__file__).resolve().parent
+    board = cv.imread(str(image_dir / "cropped" / "1.jpg"))
+    biome_results = detect_terrain(board)
+    for name, indices in biome_results.items():
+        print(name, indices, find_groups(indices))

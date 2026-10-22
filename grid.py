@@ -102,8 +102,8 @@ if __name__ == "__main__":
 
 #Splits the board into the squares 
     squares = split_board(board)
-    print("squares:", len(squares), "x", len(squares[0]), "- each", squares[0][0].shape)
+"""     print("squares:", len(squares), "x", len(squares[0]), "- each", squares[0][0].shape)
 
     cv.imshow("grid", draw_grid(board))
     cv.waitKey(0)
-    cv.destroyAllWindows
+    cv.destroyAllWindows() """
