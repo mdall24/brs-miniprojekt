@@ -29,10 +29,9 @@ grid.check_board(board)
 import biome
 
 for t in biome.biome_results:
-
     for i in biome.find_groups(biome.biome_results[i]):
         group = biome.biome_results[i]
-        crown_match.crowns = sum(crown_match.crown_counts[i] for i in group)
+        crown_match.crowns = sum(crown_match.crown_counts[j] for j in group)
         score = crown_match.crowns * len(biome.biome_results[i])
         print(f"Biome: {i}, Group: {group}, Crowns: {crown_match.crowns}, Score: {score}")
 

@@ -162,14 +162,14 @@ create_res(find_groups(biome_results["Deserts_result"]), "Deserts:")
 create_res(find_groups(biome_results["Grass_result"]), "Grass:") """
 
 #J-Man OG
-point_results = {
+""" point_results = [
      (find_groups(biome_results["Forest_result"]), "Forests:"),
      (find_groups(biome_results["Field_result"]), "Fields:"),
      (find_groups(biome_results["Ocean_result"]), "Oceans:") 
      (find_groups(biome_results["Mines_result"]), "Mines:"),
      (find_groups(biome_results["Deserts_result"]), "Deserts:"),
      (find_groups(biome_results["Grass_result"]), "Grass:")
-}
+] """
      
 
 '''
