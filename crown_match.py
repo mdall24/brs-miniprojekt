@@ -6,7 +6,7 @@ import grid
 
 STARTER_THRESHOLD = 0.5
 MIN_SCORE = 0.65 
-MAX_PER_CELL = 3 
+MAX_PER_CELL = 3  # NEW
 
 # ---------- setup that does not need a board (safe at the top level) ----------
 tmpl = crown.crown
@@ -34,8 +34,7 @@ def detect_crowns(board):
     grid.check_board(board)
 
     h, w = tmpl.shape[:2]
-    
-    board = cv.fastNlMeansDenoisingColored(board, (7, 7), 0)
+
     board_hsv = cv.cvtColor(board, cv.COLOR_BGR2HSV)
     yellow = cv.inRange(board_hsv, lower, upper)
 
