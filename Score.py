@@ -37,7 +37,8 @@ def main():
             total += points
             print(f"{name} group {group} has {crowns} crowns, {points} points")
     print("Total score:", total)
-
+    cv.imshow("crowns", output)
+    cv.waitKey(0)
 
 if __name__ == "__main__":
     main()

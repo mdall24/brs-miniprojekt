@@ -5,6 +5,8 @@ import crown
 import grid
 
 STARTER_THRESHOLD = 0.5
+MIN_SCORE = 0.65 
+MAX_PER_CELL = 3 
 
 # ---------- setup that does not need a board (safe at the top level) ----------
 tmpl = crown.crown
@@ -32,7 +34,8 @@ def detect_crowns(board):
     grid.check_board(board)
 
     h, w = tmpl.shape[:2]
-
+    
+    board = cv.fastNlMeansDenoisingColored(board, (7, 7), 0)
     board_hsv = cv.cvtColor(board, cv.COLOR_BGR2HSV)
     yellow = cv.inRange(board_hsv, lower, upper)
 
@@ -90,7 +93,10 @@ def detect_crowns(board):
 
         box_yellow = yellow[y:y + h, x:x + w]
         share = np.count_nonzero(box_yellow) / (w * h)
-        ok = share_lo <= share <= share_hi
+        ok = max_val >= MIN_SCORE                                    # NEW: score gate
+        idx = grid.index_of_box(x, y, w, h)                          # NEW
+        if ok and crown_counts[idx] >= MAX_PER_CELL:                 # NEW: per-cell cap
+                ok = False
 
         print(i, "score", round(float(max_val), 3), "yellow", round(share, 2),
               "at", (x, y), "ACCEPT" if ok else "reject")
