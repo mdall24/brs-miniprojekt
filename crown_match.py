@@ -5,7 +5,7 @@ import crown
 import grid
 
 STARTER_THRESHOLD = 0.5
-MIN_SCORE = 0.65 
+MIN_SCORE = 0.62 
 MAX_PER_CELL = 3  # NEW
 
 # ---------- setup that does not need a board (safe at the top level) ----------
