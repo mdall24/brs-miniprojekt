@@ -28,7 +28,6 @@ def draw_all(board, output, biome_results):
     return tinted
 
 def main():
-    #Get Image
     image_dir = Path(__file__).resolve().parent
     board_dir = image_dir / "cropped"
 
