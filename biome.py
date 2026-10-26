@@ -56,7 +56,15 @@ def define_type(mask, biome_array):
     for row in range(grid.GRID):
         for col in range(grid.GRID):
             tile = grid.get_square(mask, row, col)
-            count_tile(tile, biome_array)    
+            count_tile(tile, biome_array)  
+TERRAIN_NAMES = ["Forest", "Ocean", "Field", "Mines", "Deserts", "Grass"]
+MIN_FILL = 0.2
+
+def fill_ratio(mask, index):
+     row, col = grid.from_index(index)
+     tile = grid.get_square(mask, row, col)
+     return cv.countNonZero(tile) / (tile.shape[0] * tile.shape[1])
+
 def detect_terrain(board):
     grid.check_board(board)
 
@@ -80,24 +88,16 @@ def detect_terrain(board):
     deserts_mask = cv.bitwise_or(mask_brown, mask_husbrown)
     grass_mask = cv.bitwise_or(mask_green, mask_husbrown)
 
-    biome_arrays = {"Forest": [], "Ocean": [], "Field": [],
-                    "Mines": [], "Deserts": [], "Grass": []}
-    biome_results = {"Forest_result": [], "Ocean_result": [], "Field_result": [],
-                     "Mines_result": [], "Deserts_result": [], "Grass_result": []}
+    masks = [clean_mask(m) for m in (Forest_mask, Ocean_mask, Field_mask,
+                                     Mines_mask, deserts_mask, grass_mask)]
 
-    define_type(clean_mask(Forest_mask), biome_arrays["Forest"])
-    define_type(clean_mask(Field_mask), biome_arrays["Field"])
-    define_type(clean_mask(Ocean_mask), biome_arrays["Ocean"])
-    define_type(clean_mask(Mines_mask), biome_arrays["Mines"])
-    define_type(clean_mask(deserts_mask), biome_arrays["Deserts"])
-    define_type(clean_mask(grass_mask), biome_arrays["Grass"])
+    biome_results = {name + "_result": [] for name in TERRAIN_NAMES}
 
-    biome_results["Forest_result"] = count_indices(biome_arrays["Forest"])
-    biome_results["Field_result"] = count_indices(biome_arrays["Field"])
-    biome_results["Ocean_result"] = count_indices(biome_arrays["Ocean"])
-    biome_results["Mines_result"] = count_indices(biome_arrays["Mines"])
-    biome_results["Deserts_result"] = count_indices(biome_arrays["Deserts"])
-    biome_results["Grass_result"] = count_indices(biome_arrays["Grass"])
+    for i in range(grid.GRID * grid.GRID):
+        ratios = [fill_ratio(m, i) for m in masks]
+        best = ratios.index(max(ratios))        # position of the highest ratio
+        if ratios[best] >= MIN_FILL:
+            biome_results[TERRAIN_NAMES[best] + "_result"].append(i)
 
     return biome_results
 

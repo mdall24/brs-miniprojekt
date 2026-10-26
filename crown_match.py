@@ -92,9 +92,12 @@ def detect_crowns(board):
 
         box_yellow = yellow[y:y + h, x:x + w]
         share = np.count_nonzero(box_yellow) / (w * h)
-        ok = max_val >= MIN_SCORE                                    # NEW: score gate
-        idx = grid.index_of_box(x, y, w, h)                          # NEW
-        if ok and crown_counts[idx] >= MAX_PER_CELL:                 # NEW: per-cell cap
+        sat = float(board_hsv[y:y + h, x:x + w, 1].mean())
+        strong = max_val >= MIN_SCORE and share >= 0.03           
+        weak   = max_val >= 0.40 and share_lo <= share <= share_hi and sat < 160
+        ok = strong or weak                             
+        idx = grid.index_of_box(x, y, w, h)                         
+        if ok and crown_counts[idx] >= MAX_PER_CELL:                
                 ok = False
 
         """ print(i, "score", round(float(max_val), 3), "yellow", round(share, 2),
