@@ -4,6 +4,28 @@ import grid
 import crown_match
 import biome
 
+TERRAIN_COLOURS = {            
+    "Forest_result":  (180, 0, 140),     # purple
+    "Ocean_result":   (255, 60, 0),      # blue
+    "Field_result":   (0, 230, 255),     # yellow
+    "Mines_result":   (60, 60, 60),      # dark grey
+    "Deserts_result": (0, 140, 255),     # orange
+    "Grass_result":   (0, 255, 0),       # green
+}
+def draw_terrain(board, biome_results, alpha=0.5):
+    layer = board.copy()
+    for name, indices in biome_results.items():
+        for i in indices:
+            row, col = grid.from_index(i)
+            x0, y0 = col * grid.SQUARE, row * grid.SQUARE
+            cv.rectangle(layer, (x0, y0), (x0 + grid.SQUARE, y0 + grid.SQUARE), TERRAIN_COLOURS[name], cv.FILLED)
+    return cv.addWeighted(layer, alpha, board, 1 - alpha, 0)
+
+def draw_all(board, output, biome_results):
+    tinted = draw_terrain(board, biome_results)
+    drawn = cv.absdiff(output, board).any(axis = 2)
+    tinted[drawn] = output[drawn]
+    return tinted
 
 def main():
     #Get Image
@@ -27,6 +49,8 @@ def main():
     crown_counts, output, starter_index = crown_match.detect_crowns(board)
     biome_results = biome.detect_terrain(board)
 
+    overlay = grid.draw_grid(draw_all(board, output, biome_results))
+
     total = 0
     for name, indices in biome_results.items():
         # the starting tile is not a territory and nothing can connect through it
@@ -37,7 +61,8 @@ def main():
             total += points
             print(f"{name} group {group} has {crowns} crowns, {points} points")
     print("Total score:", total)
-    cv.imshow("crowns", output)
+    cv.imshow("Board", board)
+    cv.imshow("terrain + crowns", overlay)
     cv.waitKey(0)
 
 if __name__ == "__main__":
